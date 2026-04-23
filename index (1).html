@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Clientes Inmobiliarios — Cash Castañeda</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000000;
+      --gray: #828282;
+      --light: #CCCCCC;
+      --wine: #6c2838;
+      --wine-dark: #4e1c28;
+      --wine-light: #8a3347;
+      --white: #ffffff;
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --surface2: #1a1a1a;
+      --border: #222222;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; flex-direction: column; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ── HOME ── */
+    #home {
+      position: relative;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 2rem;
+    }
+
+    .home-bg {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(108,40,56,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .home-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--wine-light);
+      border: 1px solid rgba(108,40,56,0.5);
+      padding: 0.35rem 1rem;
+      border-radius: 2rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .home-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .home-title span { color: var(--wine-light); }
+
+    .home-sub {
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      color: var(--gray);
+      max-width: 520px;
+      line-height: 1.7;
+      margin: 0 auto 3rem;
+      font-weight: 300;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--wine);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.9rem 2.2rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      animation: fadeUp 0.6s 0.3s ease both;
+      letter-spacing: 0.01em;
+    }
+    .btn-primary:hover { background: var(--wine-light); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .home-features {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 4rem;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .home-feat {
+      text-align: left;
+      max-width: 160px;
+    }
+    .home-feat-icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .home-feat-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+    .home-feat-desc {
+      font-size: 0.78rem;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+
+    /* ── CONFIG ── */
+    #config {
+      padding: 2rem;
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .screen-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .back-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--gray);
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.4rem;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .back-btn:hover { color: var(--white); border-color: var(--gray); }
+
+    .screen-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+    }
+
+    .config-section { margin-bottom: 2rem; }
+
+    .config-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 0.9rem;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0.7rem;
+    }
+
+    .option-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 1rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .option-card:hover { border-color: var(--gray); }
+    .option-card.selected {
+      border-color: var(--wine);
+      background: rgba(108,40,56,0.12);
+    }
+    .option-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 0.5rem; right: 0.6rem;
+      font-size: 0.75rem;
+      color: var(--wine-light);
+      font-weight: 700;
+    }
+
+    .option-icon { font-size: 1.3rem; margin-bottom: 0.4rem; }
+    .option-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .option-desc { font-size: 0.75rem; color: var(--gray); line-height: 1.4; }
+
+    .config-start {
+      margin-top: 2.5rem;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* ── CHAT ── */
+    #chat {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #chat.active { display: flex; }
+
+    .chat-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .chat-info { flex: 1; }
+    .chat-scenario { font-size: 0.78rem; color: var(--gray); }
+    .chat-client-name { font-size: 1rem; font-weight: 600; }
+
+    .turn-indicator {
+      font-size: 0.78rem;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .turn-dots {
+      display: flex; gap: 3px;
+    }
+    .turn-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+    .turn-dot.done { background: var(--wine); }
+    .turn-dot.active { background: var(--wine-light); }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .msg {
+      max-width: 75%;
+      animation: msgIn 0.3s ease both;
+    }
+    .msg.client { align-self: flex-start; }
+    .msg.user { align-self: flex-end; }
+
+    .msg-bubble {
+      padding: 0.85rem 1.1rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .msg.client .msg-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 0.2rem;
+      color: var(--white);
+    }
+    .msg.user .msg-bubble {
+      background: var(--wine);
+      border-bottom-right-radius: 0.2rem;
+      color: var(--white);
+    }
+
+    .msg-label {
+      font-size: 0.7rem;
+      color: var(--gray);
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+    }
+    .msg.user .msg-label { text-align: right; }
+
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+    }
+    .typing-indicator.visible { display: flex; }
+    .typing-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 0.85rem 1.1rem;
+      border-radius: 1rem;
+      border-bottom-left-radius: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .typing-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--gray);
+      animation: typingBounce 1.2s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    .chat-input-area {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      gap: 0.7rem;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 0.6rem;
+      padding: 0.75rem 1rem;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      max-height: 120px;
+    }
+    .chat-input:focus { border-color: var(--wine); }
+    .chat-input::placeholder { color: var(--gray); }
+
+    .send-btn {
+      background: var(--wine);
+      border: none;
+      border-radius: 0.6rem;
+      padding: 0 1.2rem;
+      cursor: pointer;
+      color: var(--white);
+      font-size: 1.1rem;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .send-btn:hover { background: var(--wine-light); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── RESULTS ── */
+    #results {
+      padding: 2rem;
+      max-width: 700px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .score-hero {
+      text-align: center;
+      padding: 2.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(108,40,56,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .score-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 0.5rem;
+    }
+
+    .score-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--wine-light);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .score-max { font-size: 1.2rem; color: var(--gray); }
+
+    .score-comment {
+      font-size: 1rem;
+      color: var(--light);
+      margin-top: 0.8rem;
+      font-style: italic;
+    }
+
+    .result-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.8rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .result-section-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gray);
+      margin-bottom: 1rem;
+    }
+
+    .result-items { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .result-item {
+      display: flex;
+      gap: 0.7rem;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--light);
+    }
+
+    .result-item-icon { flex-shrink: 0; margin-top: 1px; }
+
+    .best-response {
+      background: var(--surface);
+      border: 1px solid rgba(108,40,56,0.4);
+      border-radius: 0.8rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .best-response-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--wine-light);
+      margin-bottom: 0.8rem;
+    }
+
+    .best-response-text {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--light);
+      font-style: italic;
+    }
+
+    .results-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-secondary {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--light);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.8rem 1.8rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--gray); color: var(--white); }
+
+    .loading-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .loading-overlay.visible { display: flex; }
+    .loading-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--wine-light);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .loading-text { color: var(--gray); font-size: 0.9rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 1.2rem;
+      color: var(--gray);
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    /* ── ERROR MSG ── */
+    .api-error {
+      background: rgba(108,40,56,0.15);
+      border: 1px solid rgba(108,40,56,0.4);
+      border-radius: 0.6rem;
+      padding: 1rem 1.2rem;
+      font-size: 0.85rem;
+      color: #e8a0a0;
+      margin: 0.5rem 0;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── API KEY MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .modal-desc {
+      color: var(--gray);
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-desc a { color: var(--wine-light); text-decoration: none; }
+    .modal-desc a:hover { text-decoration: underline; }
+
+    .api-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.8rem 1rem;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+    .api-input:focus { border-color: var(--wine); }
+
+    .modal-actions { display: flex; gap: 0.7rem; }
+  </style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal">
+  <div class="modal">
+    <div class="modal-title">Configura tu API Key</div>
+    <div class="modal-desc">
+      Para que el simulador funcione necesitas una API key de Anthropic (Claude).<br><br>
+      Consíguela gratis en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create Key.<br><br>
+      Tu key se guarda solo en este navegador y nunca se comparte.
+    </div>
+    <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-ant-..." />
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveApiKey()" style="flex:1">Guardar y continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Evaluando tu desempeño...</div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+  <div class="home-bg"></div>
+  <div style="position:relative; z-index:1;">
+    <div class="home-badge">Entrenamiento Inmobiliario con IA</div>
+    <h1 class="home-title">Simulador de<br><span>Clientes Inmobiliarios</span></h1>
+    <p class="home-sub">Practica conversaciones reales con clientes inmobiliarios antes de enfrentarlas en la vida real.</p>
+    <button class="btn-primary" onclick="goToConfig()">
+      Comenzar simulación
+      <span>→</span>
+    </button>
+    <div class="home-features">
+      <div class="home-feat">
+        <div class="home-feat-icon">🎯</div>
+        <div class="home-feat-title">4 Escenarios</div>
+        <div class="home-feat-desc">Situaciones reales del negocio inmobiliario</div>
+      </div>
+      <div class="home-feat">
+        <div class="home-feat-icon">🧠</div>
+        <div class="home-feat-title">5 Perfiles</div>
+        <div class="home-feat-desc">Tipos de cliente con personalidades distintas</div>
+      </div>
+      <div class="home-feat">
+        <div class="home-feat-icon">📊</div>
+        <div class="home-feat-title">Evaluación</div>
+        <div class="home-feat-desc">Score y retroalimentación al finalizar</div>
+      </div>
+      <div class="home-feat">
+        <div class="home-feat-icon">🔄</div>
+        <div class="home-feat-title">6–8 Turnos</div>
+        <div class="home-feat-desc">Conversaciones cortas y de alto impacto</div>
+      </div>
+    </div>
+  </div>
+  <footer>Powered by Cash Castañeda</footer>
+</div>
+
+<!-- CONFIG -->
+<div class="screen" id="config">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+    <div class="screen-title">Configura tu simulación</div>
+  </div>
+
+  <div class="config-section">
+    <div class="config-label">Escenario</div>
+    <div class="option-grid" id="scenarioGrid">
+      <div class="option-card" data-val="primera_llamada" onclick="selectOption(this,'scenario')">
+        <div class="option-icon">📞</div>
+        <div class="option-name">Primera llamada</div>
+        <div class="option-desc">Primer contacto con un comprador interesado</div>
+      </div>
+      <div class="option-card" data-val="visita_propiedad" onclick="selectOption(this,'scenario')">
+        <div class="option-icon">🏠</div>
+        <div class="option-name">Visita a propiedad</div>
+        <div class="option-desc">Mostrar y vender durante el recorrido</div>
+      </div>
+      <div class="option-card" data-val="negociacion_precio" onclick="selectOption(this,'scenario')">
+        <div class="option-icon">🤝</div>
+        <div class="option-name">Negociación de precio</div>
+        <div class="option-desc">Defender el valor y llegar a un acuerdo</div>
+      </div>
+      <div class="option-card" data-val="captacion_propietario" onclick="selectOption(this,'scenario')">
+        <div class="option-icon">🔑</div>
+        <div class="option-name">Captación de propietario</div>
+        <div class="option-desc">Convencer al dueño de trabajar contigo</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-section">
+    <div class="config-label">Tipo de cliente</div>
+    <div class="option-grid" id="clientGrid">
+      <div class="option-card" data-val="analitico" onclick="selectOption(this,'client')">
+        <div class="option-icon">📐</div>
+        <div class="option-name">Analítico</div>
+        <div class="option-desc">Pide datos, comparativas y evidencia</div>
+      </div>
+      <div class="option-card" data-val="agresivo" onclick="selectOption(this,'client')">
+        <div class="option-icon">⚡</div>
+        <div class="option-name">Agresivo</div>
+        <div class="option-desc">Directo, impaciente y muy exigente</div>
+      </div>
+      <div class="option-card" data-val="desconfiado" onclick="selectOption(this,'client')">
+        <div class="option-icon">🔍</div>
+        <div class="option-name">Desconfiado</div>
+        <div class="option-desc">Cuestiona todo y tarda en creer</div>
+      </div>
+      <div class="option-card" data-val="emocional" onclick="selectOption(this,'client')">
+        <div class="option-icon">❤️</div>
+        <div class="option-name">Emocional</div>
+        <div class="option-desc">Decide con el corazón, no con la razón</div>
+      </div>
+      <div class="option-card" data-val="indeciso" onclick="selectOption(this,'client')">
+        <div class="option-icon">🔀</div>
+        <div class="option-name">Indeciso</div>
+        <div class="option-desc">Necesita ser guiado paso a paso</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-start">
+    <button class="btn-primary" id="startBtn" onclick="startSimulation()" disabled style="opacity:0.4">
+      Iniciar simulación →
+    </button>
+  </div>
+
+  <footer>Powered by Cash Castañeda</footer>
+</div>
+
+<!-- CHAT -->
+<div class="screen" id="chat">
+  <div class="chat-header">
+    <div class="chat-info">
+      <div class="chat-scenario" id="chatScenario"></div>
+      <div class="chat-client-name" id="chatClientName"></div>
+    </div>
+    <div class="turn-indicator">
+      <div class="turn-dots" id="turnDots"></div>
+      <span id="turnLabel"></span>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" placeholder="Escribe tu respuesta como asesor..." rows="1"
+      onkeydown="handleKey(event)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="screen" id="results">
+  <div class="screen-header">
+    <div class="screen-title">Resultados de tu simulación</div>
+  </div>
+
+  <div class="score-hero">
+    <div class="score-label">Tu puntuación</div>
+    <div class="score-number" id="scoreNumber">—</div>
+    <div class="score-max">/ 100</div>
+    <div class="score-comment" id="scoreComment"></div>
+  </div>
+
+  <div class="result-section">
+    <div class="result-section-title">✅ Fortalezas</div>
+    <div class="result-items" id="strengthsList"></div>
+  </div>
+
+  <div class="result-section">
+    <div class="result-section-title">📈 Áreas de mejora</div>
+    <div class="result-items" id="improveList"></div>
+  </div>
+
+  <div class="best-response">
+    <div class="best-response-title">💬 Respuesta sugerida para tu momento clave</div>
+    <div class="best-response-text" id="bestResponse"></div>
+  </div>
+
+  <div class="results-actions">
+    <button class="btn-secondary" onclick="goTo('home')">← Volver al inicio</button>
+    <button class="btn-primary" onclick="goToConfig()">Nueva simulación →</button>
+  </div>
+
+  <footer>Powered by Cash Castañeda</footer>
+</div>
+
+<script>
+// ── STATE ──
+const state = {
+  apiKey: localStorage.getItem('cc_api_key') || '',
+  scenario: null,
+  client: null,
+  messages: [],  // {role, content}
+  turn: 0,
+  maxTurns: 7,
+};
+
+const SCENARIOS = {
+  primera_llamada: 'Primera llamada con comprador',
+  visita_propiedad: 'Visita a propiedad',
+  negociacion_precio: 'Negociación de precio',
+  captacion_propietario: 'Captación de propietario',
+};
+
+const CLIENTS = {
+  analitico: { name: 'Cliente Analítico', emoji: '📐' },
+  agresivo: { name: 'Cliente Agresivo', emoji: '⚡' },
+  desconfiado: { name: 'Cliente Desconfiado', emoji: '🔍' },
+  emocional: { name: 'Cliente Emocional', emoji: '❤️' },
+  indeciso: { name: 'Cliente Indeciso', emoji: '🔀' },
+};
+
+function getSystemPrompt() {
+  const scenarioPrompts = {
+    primera_llamada: 'Eres un cliente que acaba de ver un anuncio de una propiedad y está llamando por primera vez. Muestras interés pero con reservas.',
+    visita_propiedad: 'Eres un cliente que está visitando una propiedad con un asesor. Haces preguntas sobre la propiedad mientras recorres los espacios.',
+    negociacion_precio: 'Eres un cliente que ya vio la propiedad y le gustó, pero quieres negociar el precio. Buscas una rebaja significativa.',
+    captacion_propietario: 'Eres el dueño de una propiedad. Un asesor te contacta para convencerte de que lo contrates para vender tu inmueble. Eres escéptico sobre las comisiones.',
+  };
+
+  const clientPrompts = {
+    analitico: 'Tu personalidad: Analítico y metódico. Pides datos concretos, comparativas de mercado, historial de precios, metros cuadrados exactos, mantenimiento, etc. No tomas decisiones sin evidencia. Haces preguntas técnicas.',
+    agresivo: 'Tu personalidad: Directo, impaciente y exigente. Vas al grano, no toleras rodeos, presionas con frases como "¿cuánto me das de descuento?" o "¿puedes o no puedes?". Eres intimidante pero si el asesor es firme y profesional, lo respetas.',
+    desconfiado: 'Tu personalidad: Desconfiado y cauteloso. Cuestionas todo: las intenciones del asesor, los precios, los documentos. Haces preguntas como "¿por qué debería creerle?" o "¿qué garantías me da?". Necesitas que te demuestren confiabilidad.',
+    emocional: 'Tu personalidad: Emocional e intuitivo. Te mueves por sensaciones y conexiones. Hablas de tu familia, tus sueños, el ambiente del lugar. Frases como "me tiene que sentir bien" o "imagínese a mis hijos aquí". Necesitas que el asesor conecte contigo emocionalmente.',
+    indeciso: 'Tu personalidad: Indeciso y ansioso. Cambias de opinión frecuentemente, siempre encuentras un "pero". Necesitas que el asesor te guíe con paciencia y te dé razones claras para avanzar. Dices cosas como "es que no sé..." o "déjeme pensarlo".',
+  };
+
+  return `Eres un cliente inmobiliario en una simulación de entrenamiento para asesores en México.
+
+ESCENARIO: ${scenarioPrompts[state.scenario]}
+
+PERSONALIDAD: ${clientPrompts[state.client]}
+
+REGLAS:
+- Responde SIEMPRE en español de México, de manera natural y conversacional.
+- Mantén tu personalidad consistente en toda la conversación.
+- Haz objeciones reales y presiona al asesor, no lo hagas fácil.
+- Respuestas cortas (2-4 oraciones). Sin asteriscos ni formato markdown.
+- Reacciona de forma realista a las respuestas del asesor: si responde bien, ablanda un poco; si responde mal, endurece tu postura.
+- La conversación durará exactamente ${state.maxTurns} turnos. En el turno final, da una respuesta de cierre.`;
+}
+
+// ── NAVIGATION ──
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToConfig() {
+  // Reset selections
+  state.scenario = null;
+  state.client = null;
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').style.opacity = '0.4';
+  goTo('config');
+}
+
+// ── API KEY ──
+function checkApiKey() {
+  if (!state.apiKey) {
+    document.getElementById('apiModal').classList.add('visible');
+    return false;
+  }
+  return true;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    alert('La API key debe empezar con sk-ant-');
+    return;
+  }
+  state.apiKey = key;
+  localStorage.setItem('cc_api_key', key);
+  document.getElementById('apiModal').classList.remove('visible');
+  startSimulation();
+}
+
+// ── OPTION SELECTION ──
+function selectOption(el, type) {
+  const grid = type === 'scenario' ? 'scenarioGrid' : 'clientGrid';
+  document.querySelectorAll(`#${grid} .option-card`).forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state[type] = el.dataset.val;
+  checkStartReady();
+}
+
+function checkStartReady() {
+  const ready = state.scenario && state.client;
+  const btn = document.getElementById('startBtn');
+  btn.disabled = !ready;
+  btn.style.opacity = ready ? '1' : '0.4';
+}
+
+// ── SIMULATION ──
+async function startSimulation() {
+  if (!checkApiKey()) return;
+  if (!state.scenario || !state.client) return;
+
+  state.messages = [];
+  state.turn = 0;
+
+  // Setup chat header
+  document.getElementById('chatScenario').textContent = SCENARIOS[state.scenario];
+  document.getElementById('chatClientName').textContent =
+    CLIENTS[state.client].emoji + ' ' + CLIENTS[state.client].name;
+
+  // Clear messages
+  const msgsEl = document.getElementById('chatMessages');
+  msgsEl.innerHTML = `<div class="typing-indicator" id="typingIndicator">
+    <div class="typing-bubble">
+      <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    </div>
+  </div>`;
+
+  updateTurnDots();
+  goTo('chat');
+
+  // Get opening message from client
+  await getClientMessage('Inicia la conversación con una frase de apertura natural según el escenario y tu personalidad.');
+}
+
+function updateTurnDots() {
+  const container = document.getElementById('turnDots');
+  container.innerHTML = '';
+  for (let i = 0; i < state.maxTurns; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'turn-dot' + (i < state.turn ? ' done' : i === state.turn ? ' active' : '');
+    container.appendChild(dot);
+  }
+  document.getElementById('turnLabel').textContent = `Turno ${state.turn + 1}/${state.maxTurns}`;
+}
+
+function setInputEnabled(enabled) {
+  document.getElementById('chatInput').disabled = !enabled;
+  document.getElementById('sendBtn').disabled = !enabled;
+}
+
+function showTyping(show) {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.className = 'typing-indicator' + (show ? ' visible' : '');
+}
+
+function addMessage(role, content) {
+  const msgsEl = document.getElementById('chatMessages');
+  const typing = document.getElementById('typingIndicator');
+
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="msg-label">${role === 'client' ? CLIENTS[state.client].name : 'Tú (Asesor)'}</div>
+    <div class="msg-bubble">${content}</div>
+  `;
+  msgsEl.insertBefore(div, typing);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+async function getClientMessage(userContent) {
+  setInputEnabled(false);
+  showTyping(true);
+
+  const messages = state.messages.length === 0
+    ? [{ role: 'user', content: userContent }]
+    : [...state.messages, { role: 'user', content: userContent }];
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 300,
+        system: getSystemPrompt(),
+        messages,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      showTyping(false);
+      addErrorMessage(data.error.message);
+      setInputEnabled(true);
+      return;
+    }
+
+    const clientMsg = data.content[0].text;
+    state.messages.push({ role: 'user', content: userContent });
+    state.messages.push({ role: 'assistant', content: clientMsg });
+
+    showTyping(false);
+    addMessage('client', clientMsg);
+    state.turn++;
+    updateTurnDots();
+
+    if (state.turn >= state.maxTurns) {
+      // End simulation
+      setTimeout(() => evaluateConversation(), 800);
+    } else {
+      setInputEnabled(true);
+      document.getElementById('chatInput').focus();
+    }
+
+  } catch (err) {
+    showTyping(false);
+    addErrorMessage('Error de conexión. Verifica tu API key.');
+    setInputEnabled(true);
+  }
+}
+
+function addErrorMessage(msg) {
+  const msgsEl = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'api-error';
+  div.textContent = '⚠️ ' + msg;
+  msgsEl.appendChild(div);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+
+  await getClientMessage(text);
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('chatInput');
+  if (input) {
+    input.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  }
+});
+
+// ── EVALUATION ──
+async function evaluateConversation() {
+  goTo('results');
+  document.getElementById('loadingOverlay').classList.add('visible');
+  document.getElementById('loadingText') && (document.getElementById('loadingText').textContent = 'Evaluando tu desempeño...');
+
+  const transcript = state.messages
+    .map((m, i) => `${m.role === 'assistant' ? 'CLIENTE' : 'ASESOR'}: ${m.content}`)
+    .join('\n\n');
+
+  const evalPrompt = `Eres un coach experto en ventas inmobiliarias en México. Evalúa el desempeño de este asesor en la simulación.
+
+ESCENARIO: ${SCENARIOS[state.scenario]}
+TIPO DE CLIENTE: ${CLIENTS[state.client].name}
+
+TRANSCRIPCIÓN:
+${transcript}
+
+Responde SOLO con un JSON válido, sin markdown, sin backticks, con esta estructura exacta:
+{
+  "score": <número del 0 al 100>,
+  "comment": "<frase motivadora de 1 línea según el score>",
+  "strengths": ["<fortaleza 1>", "<fortaleza 2>", "<fortaleza 3>"],
+  "improvements": ["<área de mejora 1>", "<área de mejora 2>", "<área de mejora 3>"],
+  "best_response": "<la mejor respuesta que el asesor pudo haber dado en el momento más crítico de la conversación, escrita en primera persona como si fuera el asesor>"
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: evalPrompt }],
+      }),
+    });
+
+    const data = await res.json();
+    const raw = data.content[0].text.trim();
+    const eval_ = JSON.parse(raw);
+
+    document.getElementById('scoreNumber').textContent = eval_.score;
+    document.getElementById('scoreComment').textContent = eval_.comment;
+
+    const strengthsList = document.getElementById('strengthsList');
+    strengthsList.innerHTML = eval_.strengths.map(s =>
+      `<div class="result-item"><span class="result-item-icon">✅</span><span>${s}</span></div>`
+    ).join('');
+
+    const improveList = document.getElementById('improveList');
+    improveList.innerHTML = eval_.improvements.map(s =>
+      `<div class="result-item"><span class="result-item-icon">📌</span><span>${s}</span></div>`
+    ).join('');
+
+    document.getElementById('bestResponse').textContent = eval_.best_response;
+
+  } catch (err) {
+    document.getElementById('scoreNumber').textContent = '—';
+    document.getElementById('scoreComment').textContent = 'No se pudo generar la evaluación. Intenta de nuevo.';
+  }
+
+  document.getElementById('loadingOverlay').classList.remove('visible');
+}
+</script>
+</body>
+</html>
