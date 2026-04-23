@@ -1002,7 +1002,7 @@ async function getClientMessage(userContent) {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 300,
         system: getSystemPrompt(),
         messages,
@@ -1118,7 +1118,7 @@ Responde SOLO con un JSON válido, sin markdown, sin backticks, con esta estruct
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 800,
         messages: [{ role: 'user', content: evalPrompt }],
       }),
